@@ -16,9 +16,9 @@ Requisitos básicos:
 
 Crear endpoints:
 
-1. GET /tasks → lista todas las tareas.
+1. GET /tasks → lista todas las tareas. 
 2. POST /tasks → crea una tarea (con validación).
-3. PUT /tasks/:id → actualiza el estado de una tarea.
+3. PUT /tasks/:id → actualiza el estado de una tarea. 
 4. DELETE /tasks/:id → elimina una tarea.
 5. GET /tasks/summary → muestra estadísticas avanzadas.
 
