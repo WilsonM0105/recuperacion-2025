@@ -53,3 +53,5 @@ module.exports = {
   getSummary,
   isIdUnique,
 };
+
+// Solo paso 4 pruebas de 6, entotal dio 2 errores
