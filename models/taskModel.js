@@ -1,57 +1,44 @@
 let tasks = [];
 
-function getAllTasks() {
-  return tasks;
-}
+export const getAllTasks = () => tasks;
 
-function getTaskById(id) {
-  return tasks.find(t => t.id === id);
-}
-
-function createTask(task) {
-  tasks.push(task);
-}
-
-function updateTask(id, updates) {
-  const task = getTaskById(id);
-  if (task) {
-    Object.assign(task, updates);
-    return true;
+export const createTask = (task) => {
+  if (tasks.find((t) => t.id === task.id)) {
+    throw new Error("ID duplicado");
   }
-  return false;
-}
-
-function deleteTask(id) {
-  const index = tasks.findIndex(t => t.id === id);
-  if (index !== -1) {
-    tasks.splice(index, 1);
-    return true;
-  }
-  return false;
-}
-
-function getSummary() {
-  const total = tasks.length;
-  const completed = tasks.filter(t => t.completed).length;
-  const pending = tasks.filter(t => !t.completed);
-  const avgPriority = pending.length
-    ? pending.reduce((sum, t) => sum + t.priority, 0) / pending.length
-    : 0;
-  return { total, completed, avgPriority: avgPriority.toFixed(2) };
-}
-
-function isIdUnique(id) {
-  return !tasks.some(t => t.id === id);
-}
-
-module.exports = {
-  getAllTasks,
-  getTaskById,
-  createTask,
-  updateTask,
-  deleteTask,
-  getSummary,
-  isIdUnique,
+  tasks.push({ ...task, completed: task.completed ?? false });
+  return task;
 };
 
-// Solo paso 4 pruebas de 6, entotal dio 2 errores
+export const updateTaskStatus = (id, completed) => {
+  const task = tasks.find((t) => t.id == id);
+  if (!task) throw new Error("Tarea no encontrada");
+  task.completed = completed;
+  return task;
+};
+
+export const deleteTask = (id) => {
+  const index = tasks.findIndex((t) => t.id == id);
+  if (index === -1) throw new Error("Tarea no encontrada");
+  tasks.splice(index, 1);
+};
+
+export const getSummary = () => {
+  const total = tasks.length;
+  const completed = tasks.filter((t) => t.completed).length;
+  const pending = tasks.filter((t) => !t.completed);
+  const averagePriority = pending.length
+    ? pending.reduce((sum, t) => sum + t.priority, 0) / pending.length
+    : 0;
+
+  return {
+    total,
+    completed,
+    averagePriority: Number(averagePriority.toFixed(2)),
+  };
+};
+
+export const searchTasksByTitle = (query) => {
+  const lowerQuery = query.toLowerCase();
+  return tasks.filter((task) => task.title.toLowerCase().includes(lowerQuery));
+};

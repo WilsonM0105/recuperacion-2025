@@ -1,62 +1,74 @@
-import * as model from '../models/taskModel.js';
+import {
+  getAllTasks,
+  createTask,
+  updateTaskStatus,
+  deleteTask,
+  getSummary,
+  searchTasksByTitle,
+} from "../models/taskModel.js";
 
-export function getAll(req, res) {
-  res.json(model.getAllTasks());
-}
+export const listTasks = (req, res) => {
+  res.status(200).json(getAllTasks());
+};
 
-export function create(req, res) {
-  const { id, title, description, completed, priority } = req.body;
+export const createNewTask = (req, res) => {
+  const { id, title, description, priority } = req.body;
 
-  if (!id || !title || !description || priority === undefined) {
-    return res.status(400).json({ error: 'Missing required fields' });
-  }
-
-  if (!model.isIdUnique(id)) {
-    return res.status(409).json({ error: 'ID must be unique' });
+  if (!id || !title || !description || typeof priority !== "number") {
+    return res.status(400).json({ error: "Campos incompletos o inválidos" });
   }
 
   if (priority < 1 || priority > 5) {
-    return res.status(400).json({ error: 'Priority must be between 1 and 5' });
+    return res.status(400).json({ error: "Prioridad fuera de rango" });
   }
 
-  model.createTask({
-    id,
-    title,
-    description,
-    completed: Boolean(completed),
-    priority: Number(priority),
-  });
+  try {
+    const newTask = createTask({ id, title, description, priority });
+    res.status(201).json(newTask);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
 
-  res.status(201).json({ id }); // Para que el test espere el id devuelto
-}
-
-export function update(req, res) {
-  const id = req.params.id;
+export const updateTask = (req, res) => {
+  const { id } = req.params;
   const { completed } = req.body;
 
-  const updated = model.updateTask(id, { completed: Boolean(completed) });
-  if (!updated) {
-    return res.status(404).json({ error: 'Task not found' });
+  if (typeof completed !== "boolean") {
+    return res.status(400).json({ error: 'Campo "completed" inválido' });
   }
 
-  const updatedTask = model.getTaskById(id);
-  res.json(updatedTask); // El test espera el objeto con propiedad completed
-}
-
-export function remove(req, res) {
-  const id = req.params.id;
-  const deleted = model.deleteTask(id);
-  if (!deleted) {
-    return res.status(404).json({ error: 'Task not found' });
+  try {
+    const task = updateTaskStatus(id, completed);
+    res.status(200).json(task);
+  } catch (error) {
+    res.status(404).json({ error: error.message });
   }
-  res.json({ message: 'Task deleted successfully' });
-}
+};
 
-export function summary(req, res) {
-  const data = model.getSummary();
-  res.json({
-    total: data.total,
-    completed: data.completed,
-    averagePriority: parseFloat(data.avgPriority),
-  });
-}
+export const deleteTaskById = (req, res) => {
+  const { id } = req.params;
+
+  try {
+    deleteTask(id);
+    res.status(200).json({ message: "Tarea eliminada" });
+  } catch (error) {
+    res.status(404).json({ error: error.message });
+  }
+};
+
+export const getTaskSummary = (req, res) => {
+  const summary = getSummary();
+  res.status(200).json(summary);
+};
+
+export const searchTasks = (req, res) => {
+  const { title } = req.query;
+
+  if (!title) {
+    return res.status(400).json({ error: 'Falta el parámetro "title"' });
+  }
+
+  const results = searchTasksByTitle(title);
+  res.status(200).json(results);
+};
